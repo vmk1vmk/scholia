@@ -1,3 +1,5 @@
+const QUERY_BASE_URL = 'https://query.wikidata.org';
+
 // http://stackoverflow.com/questions/1026069/
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -112,35 +114,38 @@ function sparqlToDataTable(sparql, element, options={}) {
     var linkPrefixes = (typeof options.linkPrefixes === 'undefined') ? {} : options.linkPrefixes;
     var paging = (typeof options.paging === 'undefined') ? true : options.paging;
     
-    var url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql?query=" + 
+    var url = `${QUERY_BASE_URL}/bigdata/namespace/wdq/sparql?query=` + 
 	encodeURIComponent(sparql) + '&format=json';
 
     $.getJSON(url, function(response) {
-	var simpleData = sparqlDataToSimpleData(response);
+		var simpleData = sparqlDataToSimpleData(response);
 
-	convertedData = convertDataTableData(simpleData.data, simpleData.columns, linkPrefixes=linkPrefixes);
-	columns = [];
-	for ( i = 0 ; i < convertedData.columns.length ; i++ ) {
-	    var column = {
-		data: convertedData.columns[i],
-		title: capitalizeFirstLetter(convertedData.columns[i]).replace(/_/g, "&nbsp;"),
-		defaultContent: "",
-	    }
-	    columns.push(column)
-	}
+		convertedData = convertDataTableData(simpleData.data, simpleData.columns, linkPrefixes=linkPrefixes);
+		columns = [];
+		for ( i = 0 ; i < convertedData.columns.length ; i++ ) {
+			var column = {
+			data: convertedData.columns[i],
+			title: capitalizeFirstLetter(convertedData.columns[i]).replace(/_/g, "&nbsp;"),
+			defaultContent: "",
+			}
+			columns.push(column)
+		}
 
-	table = $(element).DataTable({ 
-	    data: convertedData.data,
-	    columns: columns,
-	    lengthMenu: [[10, 25, 100, -1], [10, 25, 100, "All"]],
-	    ordering: true,
-	    order: [], 
-	    paging: paging,
-	});
+		table = $(element).DataTable({ 
+			data: convertedData.data,
+			columns: columns,
+			lengthMenu: [[10, 25, 100, -1], [10, 25, 100, "All"]],
+			ordering: true,
+			order: [], 
+			paging: paging,
+		});
 
-	$(element).append(
-	    '<caption><a href="https://query.wikidata.org/#' + 
-		encodeURIComponent(sparql) +	
-		'">Edit on query.Wikidata.org</a></caption>');
+		$(element).append(`
+			<caption>
+				<a href="${QUERY_BASE_URL}/#${encodeURIComponent(sparql)}">
+					Edit on query.Wikidata.org
+				</a>
+			</caption>'
+		`);
     });
 }
